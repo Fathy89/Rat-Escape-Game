@@ -6,6 +6,11 @@ class SolutionScene extends Phaser.Scene {
     init(data) {
         this.solution = data.solution;
         this.mapData = data.mapData;
+        
+        // Normalize mapData to always have grid property
+        if (this.mapData.map && !this.mapData.grid) {
+            this.mapData.grid = this.mapData.map;
+        }
     }
 
     create() {

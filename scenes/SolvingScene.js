@@ -152,18 +152,17 @@ class SolvingScene extends Phaser.Scene {
             console.log('Solver result:', result);
             
             if (result.success && result.solution) {
-                // Solution found
-                this.time.delayedCall(1000, () => {
-                    this.scene.start('SolutionScene', { 
-                        solution: result.solution,
-                        mapData: this.mapData 
-                    });
+                // Solution found - mouse can escape!
+                this.statusText.setText('Path found! Mouse escapes!');
+                this.statusText.setColor('#4caf50');
+                this.time.delayedCall(1500, () => {
+                    this.scene.start('WinScene');
                 });
             } else if (result.success === false) {
-                // No solution or error
+                // No solution or error - mouse dies
                 console.error('Solver error:', result.error);
                 console.log('Python output:', result.output);
-                this.statusText.setText('No solution found!');
+                this.statusText.setText('No safe path found!');
                 this.statusText.setColor('#f44336');
                 this.time.delayedCall(2000, () => {
                     this.scene.start('LoseScene');
