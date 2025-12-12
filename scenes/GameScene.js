@@ -534,11 +534,13 @@ class GameScene extends Phaser.Scene {
             }
         }
 
-        // Create JSON object
+        // Create JSON object with the format from example.json
         const mapData = {
-            width: this.gridWidth,
-            height: this.gridHeight,
-            grid: grid
+            grid_size: {
+                N: this.gridHeight,
+                M: this.gridWidth
+            },
+            map: grid
         };
 
         // Display JSON in console

@@ -1,20 +1,31 @@
 import json
+import sys
+import io
 
+# Ensure UTF-8 encoding for Windows compatibility
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-
-with open("example.json", "r") as f:
+with open("map_data.json", "r") as f:
     data = json.load(f)
 
 N = data["grid_size"]["N"]
 M = data["grid_size"]["M"]
 MAP = data["map"]
 
-# N, M = 7, 7  # Map Size
+# Find mouse (M) and cat (C) positions
 MR, MC = 0, 0
-CR, CC = N - 1, M - 1
-SRC_MOUSE = (MR, MC)
+CR, CC = 0, 0
 
-SRC_CAT=(CR,CC)
+for i in range(N):
+    for j in range(M):
+        if MAP[i][j] == 'M':
+            MR, MC = i, j
+        elif MAP[i][j] == 'C':
+            CR, CC = i, j
+
+SRC_MOUSE = (MR, MC)
+SRC_CAT = (CR, CC)
 
 # MAP = []  # Map of the Game
 
@@ -27,7 +38,7 @@ DY = [1, 0, -1, 0]
 
 
 def Check_Goal(i, j):
-    return MAP[i][j] == 'G'
+    return MAP[i][j] in ['G', 'D']  # Door can be 'G' or 'D'
 
 
 def BFS_CAT(SRC: tuple):
@@ -91,9 +102,9 @@ def BFS_MOUSE(SRC: tuple):
 
 
 BFS_CAT(SRC=SRC_CAT)
-State=BFS_MOUSE(SRC=SRC_MOUSE)
-if State=='Path Found'  : 
-    print("You Passed Mouse ALive!")
-    
-else : 
-    print("No Safe Path Mouse died")
+State = BFS_MOUSE(SRC=SRC_MOUSE)
+
+if State == 'Path Found':
+    print("[WIN] You Passed Mouse Alive!")
+else:
+    print("[LOSE] No Safe Path Mouse died")

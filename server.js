@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
         console.log('Running Python solver...');
         console.log('Working directory:', __dirname);
         
-        const pythonProcess = spawn('python', ['bfs_solver.py'], {
+        const pythonProcess = spawn('python', ['bfs.py'], {
             cwd: __dirname,
             shell: true
         });
@@ -136,62 +136,25 @@ function parseSolverOutput(output) {
     // Extract information from Python output
     const lines = output.split('\n');
     
-    let pathLength = 0;
-    let trapsCount = 0;
-    let goalType = 'Edge';
-    let path = [];
+    // Check for WIN or LOSE markers from bfs.py
+    const isWin = output.includes('[WIN]');
+    const isLose = output.includes('[LOSE]');
     
-    // Check if solution was found first
-    const solutionFound = output.includes('Solution found') || output.includes('[SUCCESS]');
-    
-    if (!solutionFound) {
-        console.log('No solution indicators found in output');
+    if (!isWin && !isLose) {
+        console.log('No WIN/LOSE indicators found in output');
         return null;
     }
     
-    // Parse output
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        
-        if (line.includes('Path length:')) {
-            const match = line.match(/(\d+)\s*moves?/);
-            if (match) {
-                pathLength = parseInt(match[1]);
-            }
-        } else if (line.includes('Number of traps:')) {
-            const match = line.match(/Number of traps:\s*(\d+)/);
-            if (match) {
-                trapsCount = parseInt(match[1]);
-            }
-        } else if (line.includes('Door found')) {
-            goalType = 'Door';
-        } else if (line.startsWith('Path:')) {
-            // Parse path coordinates
-            const pathStr = line.substring(5).trim();
-            const pathParts = pathStr.split('->');
-            path = pathParts.map(part => {
-                const match = part.trim().match(/\((\d+),\s*(\d+)\)/);
-                if (match) {
-                    return [parseInt(match[1]), parseInt(match[2])];
-                }
-                return null;
-            }).filter(p => p !== null);
-        }
-    }
-    
-    console.log('Parsed data:', { pathLength, trapsCount, goalType, pathCount: path.length });
-    
-    // Validate we have a valid path
-    if (path.length === 0) {
-        console.log('No path coordinates found in output');
+    if (isLose) {
+        console.log('BFS determined: Mouse cannot reach door safely');
         return null;
     }
     
+    // If WIN, return success indicator
+    console.log('BFS determined: Mouse can reach door safely!');
     return {
-        pathLength: pathLength,
-        trapsCount: trapsCount,
-        goalType: goalType,
-        path: path
+        success: true,
+        message: 'Mouse can escape safely!'
     };
 }
 
