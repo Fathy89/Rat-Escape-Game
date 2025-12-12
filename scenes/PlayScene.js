@@ -7,8 +7,15 @@ class PlayScene extends Phaser.Scene {
         console.log(data.mapData);
         console.log(data.solution);
         this.mapData = data.mapData;
-        this.solution = data.solution;
-        this.path = data.solution.solution.path; // Array of [row, col]
+        
+        // Handle nested solution object from server wrapper
+        if (data.solution && data.solution.solution) {
+            this.solution = data.solution.solution;
+        } else {
+            this.solution = data.solution;
+        }
+        
+        this.path = this.solution.path; // Array of [row, col]
         this.mousePathIndex = 0;
         this.gridSize = 40;
         this.mapOffsetX = 50;
@@ -107,15 +114,34 @@ class PlayScene extends Phaser.Scene {
             }
         }
         
-        // Highlight Mouse Path (Optional, maybe make it faint)
-        /*
+        // Highlight Mouse Path
+        // Check message explicitly as requested by user
+        const isWin = this.solution.message !== "No Safe Path Mouse died";
+        const pathColor = isWin ? 0x4caf50 : 0xf44336; // Green if win, Red if lose
+        const pathAlpha = 0.4;
+        
+        // Draw path tiles
         for(let pos of this.path) {
             const [r, c] = pos;
-            const px = this.mapOffsetX + c * this.gridSize + 25;
-            const py = this.mapOffsetY + r * this.gridSize + 25;
-            this.add.circle(px, py, 5, 0xffeb3b, 0.5);
+            // Skip start position (mouse is there)
+            if (r === this.mousePos.y && c === this.mousePos.x) continue;
+            
+            const px = this.mapOffsetX + c * this.gridSize;
+            const py = this.mapOffsetY + r * this.gridSize;
+            
+            this.add.rectangle(px, py, this.gridSize, this.gridSize, pathColor, pathAlpha).setOrigin(0);
+            
+            // Optional: Add small dot in center
+            this.add.circle(px + this.gridSize/2, py + this.gridSize/2, 4, pathColor, 1);
         }
-        */
+
+        // Status Message
+        const statusMsg = isWin ? "Mouse has a winning path!" : "Mouse is trapped!";
+        this.add.text(400, 570, statusMsg, {
+            fontSize: '20px',
+            fontStyle: 'bold',
+            color: isWin ? '#4caf50' : '#f44336'
+        }).setOrigin(0.5);
     }
 
     createEntities() {

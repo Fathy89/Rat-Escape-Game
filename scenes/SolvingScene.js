@@ -151,7 +151,11 @@ class SolvingScene extends Phaser.Scene {
         .then(result => {
             console.log('Solver result:', result);
             
-            if (result.success) {
+            // Check if the BFS itself was successful (result.solution.success)
+            // result.success is just the server execution status
+            const bfsResult = result.solution;
+            
+            if (bfsResult && bfsResult.success) {
                 // Solution found - mouse can escape!
                 this.statusText.setText('Path found! Starting Game...');
                 this.statusText.setColor('#4caf50');
@@ -161,9 +165,9 @@ class SolvingScene extends Phaser.Scene {
                         solution: result
                     });
                 });
-            } else if (result.success === false) {
+            } else if (bfsResult && bfsResult.success === false) {
                 // No safe path, but we might have a "best effort" path
-                if (result.path && result.path.length > 0) {
+                if (bfsResult.path && bfsResult.path.length > 0) {
                     this.statusText.setText('No safe path... Hunting time!');
                     this.statusText.setColor('#ff9800');
                     this.time.delayedCall(1500, () => {
